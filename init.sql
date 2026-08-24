@@ -1,0 +1,3 @@
+CREATE SCHEMA IF NOT EXISTS user_schema;
+CREATE SCHEMA IF NOT EXISTS ticket_schema;
+CREATE SCHEMA IF NOT EXISTS notification_schema;
