@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:helpdesk_db}?currentSchema=user_schema
+    username: ${POSTGRES_USER:helpdesk_user}
+    password: ${POSTGRES_PASSWORD:helpdesk_password_secreta}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
