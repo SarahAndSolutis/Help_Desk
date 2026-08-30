@@ -2,6 +2,9 @@ server:
   port: 8081
 
 spring:
+  mvc:
+    problemdetails:
+      enabled: true
   application:
     name: user-service
 

@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 
 import com.helpdesk.user_service.dto.UserRequestDTO;
 import com.helpdesk.user_service.dto.UserResponseDTO;
+import com.helpdesk.user_service.exception.EmailAlreadyExistsException;
+import com.helpdesk.user_service.exception.UserNotFoundException;
 import com.helpdesk.user_service.model.User;
 import com.helpdesk.user_service.repository.UserRepository;
 
@@ -25,7 +27,7 @@ public class UserService {
     @Transactional
     public UserResponseDTO createUser(UserRequestDTO dto) {
         if (userRepository.existsByEmail(dto.email())) {
-            throw new IllegalArgumentException("Este e-mail já está em uso por outro usuário.");
+            throw new EmailAlreadyExistsException(dto.email());
         }
 
         User user = new User();
@@ -44,12 +46,6 @@ public class UserService {
 
     public UserResponseDTO getUserById(Long id) {
         User user = findEntityById(id);
-        return new UserResponseDTO(user);
-    }
-    public UserResponseDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário com e-mail " + email + " não encontrado."));
-        
         return new UserResponseDTO(user);
     }
     @Transactional
@@ -76,6 +72,6 @@ public class UserService {
     }
     private User findEntityById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário com ID " + id + " não encontrado."));
+                .orElseThrow(() -> new UserNotFoundException());
     }
 }
