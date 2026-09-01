@@ -13,7 +13,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
 
   rabbitmq:
@@ -21,3 +21,7 @@ spring:
     port: 5672
     username: ${RABBITMQ_USER:admin}
     password: ${RABBITMQ_PASSWORD:admin_secret}
+
+  config:
+    import: 
+    - "optional:file:../../../../../.env[.properties]"
