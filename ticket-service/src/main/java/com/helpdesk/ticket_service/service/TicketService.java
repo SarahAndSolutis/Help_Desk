@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.helpdesk.ticket_service.dto.*;
-import com.helpdesk.ticket_service.exception.NoContentException;
-import com.helpdesk.ticket_service.exception.UserNotFoundException;
+import com.helpdesk.ticket_service.exception.ClosedTicketException;
+import com.helpdesk.ticket_service.exception.TicketNotFoundException;
 import com.helpdesk.ticket_service.model.Ticket;
 import com.helpdesk.ticket_service.model.TicketCategory;
 import com.helpdesk.ticket_service.model.TicketPriority;
@@ -19,12 +19,14 @@ import com.helpdesk.ticket_service.repository.TicketRepository;
 
 @Service
 public class TicketService {
-    @Autowired
-    private TicketRepository repository;
+    
+    private final TicketRepository repository;
 
-    public TicketService(TicketRepository repository) {
+    @Autowired
+    public TicketService(TicketRepository repository, TicketEventPublisher eventPublisher) {
         this.repository = repository;
     }
+
     @Transactional
     public TicketResponseDTO createTicket(TicketRequestDTO dto) {
         Ticket ticket = new Ticket();
@@ -50,9 +52,11 @@ public class TicketService {
     
     public Page<TicketResponseDTO> findByCustomerId(Long customerId,Pageable pageable) {
         return repository.findByCustomerId(customerId, pageable).map(TicketResponseDTO::new);
+
     }
     public Page<TicketResponseDTO> findByStatus(TicketStatus status, Pageable pageable) {
-        return repository.findByStatus(status, pageable).map(TicketResponseDTO::new);
+        Page<Ticket> page = repository.findByStatus(status, pageable);
+        return page.map(TicketResponseDTO::new);
     }
     public Page<TicketResponseDTO> findByPriority(TicketPriority priority, Pageable pageable) {
         return repository.findByPriority(priority, pageable).map(TicketResponseDTO::new);
@@ -63,42 +67,61 @@ public class TicketService {
     public Page<TicketResponseDTO> searchByTitle(String title, Pageable pageable) {
         return repository.findByTitleContainingIgnoreCase(title, pageable).map(TicketResponseDTO::new);
     }
+
     @Transactional
     public TicketResponseDTO updateTicket(Long id, TicketUpdateDTO dto) {
         Ticket ticket = getTicketEntityById(id);
-        
+
+
         if (dto.description() != null) ticket.setDescription(dto.description()); 
         if (dto.priority() != null) ticket.setPriority(dto.priority()); 
         if (dto.category() != null) ticket.setCategory(dto.category()); 
-        if (dto.status() != null) {
+        if (dto.status() != null && ticket.getStatus() != dto.status()) {
             ticket.setStatus(dto.status());
         }
 
-        return new TicketResponseDTO(repository.save(ticket));
+        ticket = repository.save(ticket);
+
+
+        return new TicketResponseDTO(ticket);
     }
+
     @Transactional
     public TicketResponseDTO assignTechnician(Long id, TicketTechnicianDTO dto){
         Ticket ticket = getTicketEntityById(id);
-        ticket.setTechnicianId(id);
-        return new TicketResponseDTO(repository.save(ticket));
+        
+        if (ticket.getStatus() == TicketStatus.CLOSED) {
+            throw new ClosedTicketException();
+        }
+
+        ticket.setTechnicianId(dto.technicianId());
+
+        ticket = repository.save(ticket);
+        
+        return new TicketResponseDTO(ticket);
     }
+
     @Transactional
     public TicketResponseDTO closeTicket(Long id) {
         Ticket ticket = getTicketEntityById(id);
         if (ticket.getStatus() == TicketStatus.CLOSED) {
-            throw new RuntimeException("Este chamado já se encontra encerrado.");
+            throw new ClosedTicketException();
         }
 
         ticket.setStatus(TicketStatus.CLOSED); 
         
-        return new TicketResponseDTO(repository.save(ticket));
+        ticket = repository.save(ticket);
+        
+        return new TicketResponseDTO(ticket);
     }
+
     @Transactional
     public void deleteTicket(Long id) {
         repository.deleteById(id);
     }
+
     private Ticket getTicketEntityById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException());
+                .orElseThrow(() -> new TicketNotFoundException());
     }
 }

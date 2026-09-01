@@ -3,7 +3,6 @@ package com.helpdesk.ticket_service.controller;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +34,12 @@ public class TicketController {
 
     @GetMapping
     public ResponseEntity<Page<TicketResponseDTO>> getAll(
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.findAll(pageable)); 
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.findAll(pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page); 
     }
 
     @GetMapping("/{id}")
@@ -44,39 +47,59 @@ public class TicketController {
         return ResponseEntity.ok(service.findById(id)); 
     }
     
-    @GetMapping("/customer/{customerId}") // Consultar chamados de determinado cliente[cite: 2]
+    @GetMapping("/customer/{customerId}")
     public ResponseEntity<Page<TicketResponseDTO>> getByCustomer(
             @PathVariable Long customerId,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.findByCustomerId(customerId, pageable));
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.findByCustomerId(customerId, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/search") // Pesquisar chamados[cite: 2]
+    @GetMapping("/search")
     public ResponseEntity<Page<TicketResponseDTO>> searchByTitle(
             @RequestParam String title,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.searchByTitle(title, pageable));
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.searchByTitle(title, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/status/{status}")
     public ResponseEntity<Page<TicketResponseDTO>> getByStatus(
             @PathVariable TicketStatus status,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.findByStatus(status, pageable));
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.findByStatus(status, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page);
     }
 
-    @GetMapping("/priority/{priority}") // Filtrar por prioridade[cite: 2]
+    @GetMapping("/priority/{priority}") 
     public ResponseEntity<Page<TicketResponseDTO>> getByPriority(
             @PathVariable TicketPriority priority,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.findByPriority(priority, pageable));
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.findByPriority(priority, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page);
     }
 
     @GetMapping("/category/{category}") 
     public ResponseEntity<Page<TicketResponseDTO>> getByCategory(
             @PathVariable TicketCategory category,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(service.findByCategory(category, pageable));
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
+        Page<TicketResponseDTO> page = service.findByCategory(category, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(page);
     }
 
     @PutMapping("/{id}") 
