@@ -3,7 +3,6 @@ package com.helpdesk.user_service.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +36,9 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Page<UserResponseDTO>> list(@PageableDefault(page = 0, size = 15, sort = "id") Pageable pageable ) {
         Page<UserResponseDTO> users = userService.getAllUsers(pageable);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.ok(users); 
     }
     @GetMapping("/{id}")
