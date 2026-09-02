@@ -14,6 +14,7 @@ import com.helpdesk.ticket_service.model.Ticket;
 import com.helpdesk.ticket_service.model.TicketCategory;
 import com.helpdesk.ticket_service.model.TicketPriority;
 import com.helpdesk.ticket_service.model.TicketStatus;
+import com.helpdesk.ticket_service.publisher.TicketEventPublisher;
 import com.helpdesk.ticket_service.repository.TicketRepository;
 
 
@@ -21,10 +22,12 @@ import com.helpdesk.ticket_service.repository.TicketRepository;
 public class TicketService {
     
     private final TicketRepository repository;
+    private final TicketEventPublisher eventPublisher;
 
     @Autowired
     public TicketService(TicketRepository repository, TicketEventPublisher eventPublisher) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -37,8 +40,9 @@ public class TicketService {
         ticket.setCustomerId(dto.customerId());
         
         ticket = repository.save(ticket);
-        
-        return new TicketResponseDTO(ticket);
+        TicketResponseDTO responseDTO = new TicketResponseDTO(ticket);   
+        eventPublisher.publishEvent(responseDTO, "TicketCreated");
+        return responseDTO;
     }
 
     public Page<TicketResponseDTO> findAll(Pageable pageable) {
@@ -71,19 +75,22 @@ public class TicketService {
     @Transactional
     public TicketResponseDTO updateTicket(Long id, TicketUpdateDTO dto) {
         Ticket ticket = getTicketEntityById(id);
-
+        boolean statusChanged = false;
 
         if (dto.description() != null) ticket.setDescription(dto.description()); 
         if (dto.priority() != null) ticket.setPriority(dto.priority()); 
         if (dto.category() != null) ticket.setCategory(dto.category()); 
         if (dto.status() != null && ticket.getStatus() != dto.status()) {
             ticket.setStatus(dto.status());
+            statusChanged = true;
         }
 
         ticket = repository.save(ticket);
-
-
-        return new TicketResponseDTO(ticket);
+        TicketResponseDTO responseDTO = new TicketResponseDTO(ticket);
+        if (statusChanged) {
+            eventPublisher.publishEvent(responseDTO, "TicketStatusChanged");
+        }
+        return responseDTO;
     }
 
     @Transactional
@@ -95,10 +102,13 @@ public class TicketService {
         }
 
         ticket.setTechnicianId(dto.technicianId());
+        ticket.setStatus(TicketStatus.IN_PROGRESS);
 
         ticket = repository.save(ticket);
+        TicketResponseDTO responseDTO = new TicketResponseDTO(ticket);
+        eventPublisher.publishEvent(responseDTO, "TicketAssigned");
         
-        return new TicketResponseDTO(ticket);
+        return responseDTO;
     }
 
     @Transactional
@@ -107,12 +117,11 @@ public class TicketService {
         if (ticket.getStatus() == TicketStatus.CLOSED) {
             throw new ClosedTicketException();
         }
-
         ticket.setStatus(TicketStatus.CLOSED); 
-        
         ticket = repository.save(ticket);
-        
-        return new TicketResponseDTO(ticket);
+        TicketResponseDTO responseDTO = new TicketResponseDTO(ticket);
+        eventPublisher.publishEvent(responseDTO, "TicketStatusChanged");
+        return responseDTO;
     }
 
     @Transactional
