@@ -6,7 +6,6 @@ spring:
     name: notification-service
 
   datasource:
-    # Aponta para o schema isolado do Notification Service
     url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:helpdesk_db}?currentSchema=notification_schema
     username: ${POSTGRES_USER:helpdesk_user}
     password: ${POSTGRES_PASSWORD:helpdesk_password_secreta}
@@ -22,3 +21,6 @@ spring:
     port: 5672
     username: ${RABBITMQ_USER:admin}
     password: ${RABBITMQ_PASSWORD:admin_secret}
+  config:
+    import: 
+    - "optional:file:../../../../../.env[.properties]"
