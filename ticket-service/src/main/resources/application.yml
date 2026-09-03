@@ -6,7 +6,7 @@ spring:
     name: ticket-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:helpdesk_db}?currentSchema=ticket_schema
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${POSTGRES_DB:helpdesk_db}?currentSchema=ticket_schema
     username: ${POSTGRES_USER:helpdesk_user}
     password: ${POSTGRES_PASSWORD:helpdesk_password_secreta}
     driver-class-name: org.postgresql.Driver
@@ -17,11 +17,11 @@ spring:
     show-sql: true
 
   rabbitmq:
-    host: localhost
+    host: ${RABBITMQ_HOST:localhost}
     port: 5672
     username: ${RABBITMQ_USER:admin}
     password: ${RABBITMQ_PASSWORD:admin_secret}
 
   config:
     import: 
-    - "optional:file:../../../../../.env[.properties]"
+    - "optional:file:../.env[.properties]"
