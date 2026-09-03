@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -24,15 +25,17 @@ protected ResponseEntity<Object> handleMethodArgumentNotValid(
             HttpHeaders headers, 
             HttpStatusCode status, 
             WebRequest request) {
-        
-        String errorMessage = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, errorMessage);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, "Um ou mais campos estão inválidos. Verifique os detalhes e tente novamente.");
         problem.setType(URI.create("urn:problem-type:validation-error"));
         problem.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
         problem.setProperty("timestamp", LocalDateTime.now());
+        List<CampoInvalido> erros = ex.getBindingResult().getFieldErrors().stream()
+                .map(erro -> new CampoInvalido(erro.getField(), erro.getDefaultMessage()))
+                .toList();
+        problem.setProperty("erros", erros);
 
-        return handleExceptionInternal(ex, problem, headers, status, request);
+        return ResponseEntity.badRequest().body(problem);
     }
 
 @ExceptionHandler(BaseException.class)
@@ -43,7 +46,7 @@ protected ResponseEntity<Object> handleMethodArgumentNotValid(
     }
 @ExceptionHandler(Exception.class)
     public ProblemDetail handleGenericException(Exception ex, WebRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno inesperado no servidor.");
         problem.setTitle("Erro Interno do Servidor");
         problem.setType(URI.create("urn:problem-type:internal-server-error"));
         problem.setInstance(URI.create(request.getDescription(false).replace("uri=", "")));
@@ -51,6 +54,7 @@ protected ResponseEntity<Object> handleMethodArgumentNotValid(
         
         return problem;
     }
+    private record CampoInvalido(String campo, String mensagem) {}
     
 }
 

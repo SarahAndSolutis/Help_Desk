@@ -48,6 +48,12 @@ public class UserService {
         User user = findEntityById(id);
         return new UserResponseDTO(user);
     }
+    public UserResponseDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException());
+        
+        return new UserResponseDTO(user);
+    }
     @Transactional
     public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
         User user = findEntityById(id);
