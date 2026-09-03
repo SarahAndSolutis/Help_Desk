@@ -52,6 +52,15 @@ O orquestrador cuidará da compilação (`maven build`) de cada microsserviço i
 docker-compose down
 ```
 
+**Para parar o ambiente:**
+```bash
+docker-compose stop
+```
+**Para iniciar o ambiente caso ele já exista:**
+```bash
+docker-compose start
+```
+
 ## Principais Endpoints (Via API Gateway)
 
 *O prefixo para acesso é sempre a porta do gateway `http://localhost:8080`*
