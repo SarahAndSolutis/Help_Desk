@@ -38,12 +38,20 @@ Para rodar este projeto na sua máquina, você precisará ter instalado:
 
 ## Instruções de Execução
 
-Graças ao Docker, subir todo o ecossistema é extremamente simples. Na raiz do projeto, execute:
+Graças ao Docker, subir todo o ecossistema é extremamente simples. Na raiz do projeto, execute os passos abaixo:
 
-```bash
-# Sobe os bancos, o RabbitMQ e os 4 microsserviços
-docker-compose up -d --build
-```
+1. **Configurar variáveis de ambiente:**
+   Existe um arquivo chamado `.env.example` na raiz do projeto contendo o modelo de configuração necessário. Faça uma cópia dele e renomeie para `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Subir os containers:**
+   Execute o docker-compose para inicializar toda a infraestrutura:
+   ```bash
+   # Sobe os bancos, o RabbitMQ e os 4 microsserviços
+   docker-compose up -d --build
+   ```
 
 O orquestrador cuidará da compilação (`maven build`) de cada microsserviço internamente e os iniciará na ordem correta usando dependências de rede.
 

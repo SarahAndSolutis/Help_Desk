@@ -9,4 +9,6 @@ class UserServiceApplicationTests {
 	@Test
 	void contextLoads() {
 	}
+
 }
+
