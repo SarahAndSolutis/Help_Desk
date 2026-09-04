@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.helpdesk.user_service.dto.UserRequestDTO;
 import com.helpdesk.user_service.dto.UserResponseDTO;
+import com.helpdesk.user_service.dto.UserUpdateDTO;
 import com.helpdesk.user_service.service.UserService;
 
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @AllArgsConstructor
@@ -51,8 +53,8 @@ public class UserController {
         UserResponseDTO user = userService.getUserByEmail(email);
         return ResponseEntity.ok(user);
     }
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody @Valid UserRequestDTO dto) {
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> update(@PathVariable Long id, @RequestBody @Valid UserUpdateDTO dto) {
         UserResponseDTO updatedUser = userService.updateUser(id, dto);
         return ResponseEntity.ok(updatedUser);
     }

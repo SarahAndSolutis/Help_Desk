@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.helpdesk.user_service.dto.UserRequestDTO;
 import com.helpdesk.user_service.dto.UserResponseDTO;
+import com.helpdesk.user_service.dto.UserUpdateDTO;
 import com.helpdesk.user_service.exception.EmailAlreadyExistsException;
 import com.helpdesk.user_service.exception.UserNotFoundException;
 import com.helpdesk.user_service.model.User;
@@ -55,19 +56,21 @@ public class UserService {
         return new UserResponseDTO(user);
     }
     @Transactional
-    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+    public UserResponseDTO updateUser(Long id, UserUpdateDTO dto) {
         User user = findEntityById(id);
-
-        if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
-            throw new IllegalArgumentException("Este e-mail já está em uso por outro usuário.");
+        if (dto.name() != null && !dto.name().isBlank()) {
+            user.setName(dto.name());
         }
-
-        user.setName(dto.name());
-        user.setEmail(dto.email());
+        if (dto.email() != null && !dto.email().isBlank()) {
+            if (!user.getEmail().equals(dto.email()) && userRepository.existsByEmail(dto.email())) {
+            throw new EmailAlreadyExistsException(dto.email());
+            }
+            user.setEmail(dto.email());
+        }
+        if (dto.role() != null) {
         user.setRole(dto.role());
-
+        }
         user = userRepository.save(user);
-        
         return new UserResponseDTO(user);
     }
     @Transactional

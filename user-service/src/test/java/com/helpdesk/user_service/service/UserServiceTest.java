@@ -79,5 +79,23 @@ class UserServiceTest {
 
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(99L));
     }
+
+    @Test
+    void updateUser_ShouldUpdateFields() {
+        com.helpdesk.user_service.dto.UserUpdateDTO updateDTO = new com.helpdesk.user_service.dto.UserUpdateDTO(
+                "Novo Nome", "novoemail@example.com", UserRole.CLIENT);
+                
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmail("novoemail@example.com")).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        UserResponseDTO response = userService.updateUser(1L, updateDTO);
+
+        assertEquals("Novo Nome", response.name());
+        assertEquals("novoemail@example.com", response.email());
+        assertEquals(UserRole.CLIENT, response.role());
+        
+        verify(userRepository).save(user);
+    }
 }
 

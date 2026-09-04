@@ -25,6 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,5 +85,41 @@ class TicketControllerTest {
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().getTotalElements());
         assertEquals("Problema no PC", response.getBody().getContent().get(0).title());
+    }
+
+    @Test
+    void assignTechnician_ShouldReturn200() {
+        com.helpdesk.ticket_service.dto.TicketTechnicianDTO technicianDTO = new com.helpdesk.ticket_service.dto.TicketTechnicianDTO(20L);
+        TicketResponseDTO updatedResponse = new TicketResponseDTO(
+                1L, "Problema no PC", "Não liga",
+                TicketPriority.HIGH, TicketStatus.IN_PROGRESS, TicketCategory.HARDWARE,
+                10L, 20L, LocalDateTime.now(), LocalDateTime.now()
+        );
+        
+        when(ticketService.assignTechnician(eq(1L), any(com.helpdesk.ticket_service.dto.TicketTechnicianDTO.class))).thenReturn(updatedResponse);
+
+        ResponseEntity<TicketResponseDTO> response = ticketController.assignTechnician(1L, technicianDTO);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(TicketStatus.IN_PROGRESS, response.getBody().status());
+        assertEquals(20L, response.getBody().technicianId());
+    }
+
+    @Test
+    void close_ShouldReturn200() {
+        TicketResponseDTO closedResponse = new TicketResponseDTO(
+                1L, "Problema no PC", "Não liga",
+                TicketPriority.HIGH, TicketStatus.CLOSED, TicketCategory.HARDWARE,
+                10L, 20L, LocalDateTime.now(), LocalDateTime.now()
+        );
+        
+        when(ticketService.closeTicket(1L)).thenReturn(closedResponse);
+
+        ResponseEntity<TicketResponseDTO> response = ticketController.closeTicket(1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(TicketStatus.CLOSED, response.getBody().status());
     }
 }

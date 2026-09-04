@@ -23,6 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,7 +66,7 @@ class UserControllerTest {
     }
 
     @Test
-    void list_ShouldReturn200AndPage() {
+    void getAll_ShouldReturn200AndPage() {
         Pageable pageable = PageRequest.of(0, 10);
         when(userService.getAllUsers(any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(responseDTO)));
@@ -76,5 +77,21 @@ class UserControllerTest {
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().getTotalElements());
         assertEquals("Sarah", response.getBody().getContent().get(0).name());
+    }
+
+    @Test
+    void update_ShouldReturn200() {
+        com.helpdesk.user_service.dto.UserUpdateDTO updateDTO = new com.helpdesk.user_service.dto.UserUpdateDTO(
+                "Sarah Atualizada", null, null);
+        
+        UserResponseDTO updatedResponse = new UserResponseDTO(1L, "Sarah Atualizada", "sarah@example.com", UserRole.ADMIN, true, LocalDateTime.now());
+        
+        when(userService.updateUser(eq(1L), any(com.helpdesk.user_service.dto.UserUpdateDTO.class))).thenReturn(updatedResponse);
+
+        ResponseEntity<UserResponseDTO> response = userController.update(1L, updateDTO);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Sarah Atualizada", response.getBody().name());
     }
 }
